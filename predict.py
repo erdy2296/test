@@ -1,8 +1,9 @@
-import os
 from typing import Any
 
 import replicate
-from cog import BasePredictor, Input, Secret
+from cog import BasePredictor, Input
+
+from private_token import TOKEN
 
 
 TARGET_MODEL = "kwaivgi/kling-v3-motion-control"
@@ -19,12 +20,12 @@ def output_to_text(output: Any) -> str:
 
 class Predictor(BasePredictor):
     def setup(self):
-        pass
+        self.client = replicate.Client(api_token=TOKEN)
 
     def predict(
         self,
         image: str = Input(
-            description="URL gambar karakter / model / start image"
+            description="URL gambar karakter / start image"
         ),
         video: str = Input(
             description="URL video referensi gerakan / motion reference"
@@ -35,6 +36,31 @@ class Predictor(BasePredictor):
         ),
         character_orientation: str = Input(
             default="video",
+            choices=["image", "video"],
+            description="image = mengikuti arah gambar, video = mengikuti orientasi video referensi"
+        ),
+        mode: str = Input(
+            default="std",
+            choices=["std", "pro"],
+            description="std = 720p, pro = 1080p"
+        ),
+    ) -> str:
+        input_data = {
+            "image": image,
+            "video": video,
+            "character_orientation": character_orientation,
+            "mode": mode,
+        }
+
+        if prompt.strip():
+            input_data["prompt"] = prompt.strip()
+
+        output = self.client.run(
+            TARGET_MODEL,
+            input=input_data
+        )
+
+        return output_to_text(output)            default="video",
             choices=["image", "video"],
             description="image = mengikuti arah gambar, video = mengikuti orientasi video referensi"
         ),
