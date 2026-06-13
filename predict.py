@@ -23,9 +23,6 @@ class Predictor(BasePredictor):
 
     def predict(
         self,
-        replicate_api_token: Secret = Input(
-            description="Masukkan Replicate API token kamu. Jangan tulis token di kode."
-        ),
         image: str = Input(
             description="URL gambar karakter / model / start image"
         ),
