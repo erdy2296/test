@@ -3,7 +3,7 @@ from typing import Any
 import replicate
 from cog import BasePredictor, Input
 
-from private_token import TOKEN
+from private_config import REPLICATE_API_TOKEN
 
 
 TARGET_MODEL = "kwaivgi/kling-v3-motion-control"
@@ -11,33 +11,23 @@ TARGET_MODEL = "kwaivgi/kling-v3-motion-control"
 
 def output_to_text(output: Any) -> str:
     if isinstance(output, list):
-        if len(output) == 1:
-            return str(output[0])
         return "\n".join(str(item) for item in output)
-
     return str(output)
 
 
 class Predictor(BasePredictor):
     def setup(self):
-        self.client = replicate.Client(api_token=TOKEN)
+        self.client = replicate.Client(api_token=REPLICATE_API_TOKEN)
 
     def predict(
         self,
-        image: str = Input(
-            description="URL gambar karakter / start image"
-        ),
-        video: str = Input(
-            description="URL video referensi gerakan / motion reference"
-        ),
-        prompt: str = Input(
-            default="",
-            description="Prompt tambahan untuk menjaga konsistensi karakter, outfit, background, dan motion"
-        ),
+        image: str = Input(description="URL gambar karakter / start image"),
+        video: str = Input(description="URL video reference motion"),
+        prompt: str = Input(default="", description="Prompt tambahan"),
         character_orientation: str = Input(
             default="video",
             choices=["image", "video"],
-            description="image = mengikuti arah gambar, video = mengikuti orientasi video referensi"
+            description="image = ikut orientasi gambar, video = ikut orientasi video"
         ),
         mode: str = Input(
             default="std",
@@ -56,33 +46,6 @@ class Predictor(BasePredictor):
             input_data["prompt"] = prompt.strip()
 
         output = self.client.run(
-            TARGET_MODEL,
-            input=input_data
-        )
-
-        return output_to_text(output)            default="video",
-            choices=["image", "video"],
-            description="image = mengikuti arah gambar, video = mengikuti orientasi video referensi"
-        ),
-        mode: str = Input(
-            default="std",
-            choices=["std", "pro"],
-            description="std = 720p, pro = 1080p"
-        ),
-    ) -> str:
-        os.environ["REPLICATE_API_TOKEN"] = replicate_api_token.get_secret_value()
-
-        input_data = {
-            "image": image,
-            "video": video,
-            "character_orientation": character_orientation,
-            "mode": mode,
-        }
-
-        if prompt.strip():
-            input_data["prompt"] = prompt
-
-        output = replicate.run(
             TARGET_MODEL,
             input=input_data
         )
