@@ -1,7 +1,7 @@
 from typing import Any
 
 import replicate
-from cog import BasePredictor, Input
+from cog import BasePredictor, Input, Path
 
 from private_config import REPLICATE_API_TOKEN
 
@@ -21,9 +21,16 @@ class Predictor(BasePredictor):
 
     def predict(
         self,
-        image: str = Input(description="URL gambar karakter / start image"),
-        video: str = Input(description="URL video reference motion"),
-        prompt: str = Input(default="", description="Prompt tambahan"),
+        image: Path = Input(
+            description="Upload gambar karakter / start image"
+        ),
+        video: Path = Input(
+            description="Upload video referensi gerakan / motion reference"
+        ),
+        prompt: str = Input(
+            default="",
+            description="Prompt tambahan"
+        ),
         character_orientation: str = Input(
             default="video",
             choices=["image", "video"],
@@ -36,8 +43,8 @@ class Predictor(BasePredictor):
         ),
     ) -> str:
         input_data = {
-            "image": image,
-            "video": video,
+            "image": open(str(image), "rb"),
+            "video": open(str(video), "rb"),
             "character_orientation": character_orientation,
             "mode": mode,
         }
