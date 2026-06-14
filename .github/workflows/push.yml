@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       model_name:
-        description: 'Contoh: georigasaturdayy/deddy-motion-control'
+        description: 'Contoh: erdy2296/test'
         required: true
 
 jobs:
@@ -13,14 +13,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Free disk space
-        uses: jlumbroso/free-disk-space@v1.3.1
-        with:
-          tool-cache: false
-          docker-images: false
-
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Create private config
+        env:
+          INNER_REPLICATE_API_TOKEN: ${{ secrets.INNER_REPLICATE_API_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import os
+
+          token = os.environ.get("INNER_REPLICATE_API_TOKEN")
+
+          if not token:
+              raise SystemExit("ERROR: INNER_REPLICATE_API_TOKEN belum dibuat di GitHub Secrets")
+
+          with open("private_config.py", "w", encoding="utf-8") as f:
+              f.write("REPLICATE_API_TOKEN = " + repr(token) + "\n")
+
+          print("private_config.py created")
+          PY
+
+      - name: Check files
+        run: |
+          ls -la
+          test -f cog.yaml
+          test -f predict.py
+          test -f private_config.py
 
       - name: Setup Cog
         uses: replicate/setup-cog@v2
